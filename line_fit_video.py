@@ -2,19 +2,28 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import pickle
+import time
 from combined_thresh import combined_thresh
 from perspective_transform import perspective_transform
 from Line import Line
-from line_fit import line_fit, tune_fit, final_viz, calc_curve, calc_vehicle_offset
+from line_fit import line_fit, tune_fit, final_viz, calc_vehicle_offset
 from moviepy.editor import VideoFileClip
 
 
 # Global variables (just to make the moviepy video annotation work)
-with open('calibrate_camera.p', 'rb') as f:
-	save_dict = pickle.load(f)
-mtx = save_dict['mtx']
-dist = save_dict['dist']
+# with open('calibrate_camera.p', 'rb') as f:
+# 	save_dict = pickle.load(f)
+# mtx = save_dict['mtx']
+# dist = save_dict['dist']
+
+mtx = np.array([[1.15687796e+03, 0.00000000e+00, 6.70608746e+02],
+       [0.00000000e+00, 1.15353388e+03, 3.88894697e+02],
+       [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+dist = np.array([[-2.45563526e-01,  2.56430985e-03, -5.88014374e-04,
+        -1.34979788e-04, -6.85209263e-02]])
+
+
 window_size = 5  # how many frames for line smoothing
 left_line = Line(n=window_size)
 right_line = Line(n=window_size)
@@ -36,7 +45,9 @@ def annotate_image(img_in):
 	undist = cv2.undistort(img_in, mtx, dist, None, mtx)
 	img, abs_bin, mag_bin, dir_bin, hls_bin = combined_thresh(undist)
 	binary_warped, binary_unwarped, m, m_inv = perspective_transform(img)
-
+	cv2.imwrite("image.jpg",binary_warped)
+	# print("saved image")
+	# print(np.unique(img))
 	# Perform polynomial fit
 	if not detected:
 		# Slow line fit
@@ -51,9 +62,10 @@ def annotate_image(img_in):
 		# Get moving average of line fit coefficients
 		left_fit = left_line.add_fit(left_fit)
 		right_fit = right_line.add_fit(right_fit)
+		# calculatingte curvature
 
-		# Calculate curvature
-		left_curve, right_curve = calc_curve(left_lane_inds, right_lane_inds, nonzerox, nonzeroy)
+		# print("HERE")
+		#left_curve, right_curve = calc_curve(left_lane_inds, right_lane_inds, nonzerox, nonzeroy)
 
 		detected = True  # slow line fit always detects the line
 
@@ -80,12 +92,13 @@ def annotate_image(img_in):
 
 			left_fit = left_line.add_fit(left_fit)
 			right_fit = right_line.add_fit(right_fit)
-			left_curve, right_curve = calc_curve(left_lane_inds, right_lane_inds, nonzerox, nonzeroy)
+			# print("HERE")
+			#left_curve, right_curve = calc_curve(left_lane_inds, right_lane_inds, nonzerox, nonzeroy)
 		else:
 			detected = False
 
 	vehicle_offset = calc_vehicle_offset(undist, left_fit, right_fit)
-
+	# print (vehicle_offset)
 	# Perform final visualization on top of original undistorted image
 	result = final_viz(undist, left_fit, right_fit, m_inv, left_curve, right_curve, vehicle_offset)
 
@@ -101,13 +114,14 @@ def annotate_video(input_file, output_file):
 
 if __name__ == '__main__':
 	# Annotate the video
-	annotate_video('project_video.mp4', 'out.mp4')
+	#annotate_video('project_video.mp4', 'out.mp4')
 
 	# Show example annotated image on screen for sanity check
 	img_file = 'test_images/test2.jpg'
 	img = mpimg.imread(img_file)
+	img=cv2.resize(img,(1280,720))
+	t=time.time()
 	result = annotate_image(img)
-	result = annotate_image(img)
-	result = annotate_image(img)
+	print(1/(time.time()-t))
 	plt.imshow(result)
 	plt.show()
