@@ -48,8 +48,10 @@ def annotate_image(img_in):
 	cv2.imwrite("image.jpg",binary_warped)
 	# print("saved image")
 	# print(np.unique(img))
+	# print(np.unique(binary_warped))
 	# Perform polynomial fit
 	if not detected:
+		# print "Line53"
 		# Slow line fit
 		ret = line_fit(binary_warped)
 		left_fit = ret['left_fit']
@@ -119,7 +121,10 @@ if __name__ == '__main__':
 	# Show example annotated image on screen for sanity check
 	img_file = 'test_images/test2.jpg'
 	img = mpimg.imread(img_file)
-	img=cv2.resize(img,(1280,720))
+	# print(np.unique(img))
+	# img=cv2.resize(img,(1280,720))
+	img=cv2.resize(img,(640,360))
+	# print(np.unique(img))
 	t=time.time()
 	result = annotate_image(img)
 	print(1/(time.time()-t))
