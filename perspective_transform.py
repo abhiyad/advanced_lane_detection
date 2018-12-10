@@ -23,11 +23,17 @@ def perspective_transform(img):
 		[300, 0],
 		[980, 0]])
 
+	src/=2
+	dst/=2
+
 	m = cv2.getPerspectiveTransform(src, dst)
 	m_inv = cv2.getPerspectiveTransform(dst, src)
 
 	warped = cv2.warpPerspective(img, m, img_size, flags=cv2.INTER_LINEAR)
 	unwarped = cv2.warpPerspective(warped, m_inv, (warped.shape[1], warped.shape[0]), flags=cv2.INTER_LINEAR)  # DEBUG
+
+	# print "Unique return in perspective transform"
+	# print(np.unique(warped))
 
 	return warped, unwarped, m, m_inv
 

@@ -19,30 +19,41 @@ def line_fit(binary_warped):
 	# Find the peak of the left and right halves of the histogram
 	# These will be the starting point for the left and right lines
 	midpoint = np.int(histogram.shape[0]/2)
-	leftx_base = np.argmax(histogram[100:midpoint]) + 100
-	rightx_base = np.argmax(histogram[midpoint:-100]) + midpoint
+	leftx_base = np.argmax(histogram[50:midpoint]) + 50
+	rightx_base = np.argmax(histogram[midpoint:-50]) + midpoint
+
+	# print "lbase %d rbase %d"%(leftx_base,rightx_base)
 
 	# Choose the number of sliding windows
 	nwindows = 9
 	# Set height of windows
 	window_height = np.int(binary_warped.shape[0]/nwindows)
+
 	# Identify the x and y positions of all nonzero pixels in the image
 	nonzero = binary_warped.nonzero()
+
+	# print(np.unique(binary_warped))
+
+	# print "Non Zero"
+	# print nonzero
+
 	nonzeroy = np.array(nonzero[0])
 	nonzerox = np.array(nonzero[1])
+
 	# Current positions to be updated for each window
 	leftx_current = leftx_base
 	rightx_current = rightx_base
 	# Set the width of the windows +/- margin
-	margin = 100
+	margin = 50
 	# Set minimum number of pixels found to recenter window
-	minpix = 50
+	minpix = 25
 	# Create empty lists to receive left and right lane pixel indices
 	left_lane_inds = []
 	right_lane_inds = []
 
 	# Step through the windows one by one
 	for window in range(nwindows):
+		# print "Line54:P"
 		# Identify window boundaries in x and y (and right and left)
 		win_y_low = binary_warped.shape[0] - (window+1)*window_height
 		win_y_high = binary_warped.shape[0] - window*window_height
@@ -88,7 +99,7 @@ def line_fit(binary_warped):
 	ret['out_img'] = out_img
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
-
+	#Changes done in this fn.
 	return ret
 
 
@@ -102,7 +113,7 @@ def tune_fit(binary_warped, left_fit, right_fit):
 	nonzero = binary_warped.nonzero()
 	nonzeroy = np.array(nonzero[0])
 	nonzerox = np.array(nonzero[1])
-	margin = 100
+	margin = 50
 	left_lane_inds = ((nonzerox > (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy + left_fit[2] - margin)) & (nonzerox < (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy + left_fit[2] + margin)))
 	right_lane_inds = ((nonzerox > (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy + right_fit[2] - margin)) & (nonzerox < (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy + right_fit[2] + margin)))
 
@@ -133,7 +144,7 @@ def tune_fit(binary_warped, left_fit, right_fit):
 	ret['nonzeroy'] = nonzeroy
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
-
+	#Changes done in this fn.
 	return ret
 
 
@@ -166,7 +177,7 @@ def final_viz(undist, left_fit, right_fit, m_inv, left_curve, right_curve, vehic
 	# Create an image to draw the lines on
 	#warp_zero = np.zeros_like(warped).astype(np.uint8)
 	#color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
-	color_warp = np.zeros((720, 1280, 3), dtype='uint8')  # NOTE: Hard-coded image dimensions
+	color_warp = np.zeros((360, 640, 3), dtype='uint8')  # NOTE: Hard-coded image dimensions
 
 	# Recast the x and y points into usable format for cv2.fillPoly()
 	pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
@@ -180,5 +191,5 @@ def final_viz(undist, left_fit, right_fit, m_inv, left_curve, right_curve, vehic
 	newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))
 	# Combine the result with the original image
 	result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
-
+	#Changed done in this fn.
 	return result
